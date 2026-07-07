@@ -1,6 +1,7 @@
 package com.yurirvs.dome.mapper;
 
 import com.yurirvs.dome.entity.Employee;
+import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Select;
 
@@ -15,4 +16,8 @@ public interface EmployeeMapper {
     @Select("select * from employee where username = #{username}")
     Employee getByUsername(String username);
 
+    @Insert("INSERT INTO employee VALUES " +
+            "(null,#{name},#{username},#{password},#{phone},#{sex},#{idNumber},#{status}," +
+            "#{createTime},#{updateTime},#{createUser},#{updateUser})")
+    int insert(Employee employee);
 }

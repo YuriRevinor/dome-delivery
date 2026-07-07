@@ -1,5 +1,6 @@
 package com.yurirvs.dome.service;
 
+import com.yurirvs.dome.dto.EmployeeDTO;
 import com.yurirvs.dome.dto.EmployeeLoginDTO;
 import com.yurirvs.dome.entity.Employee;
 
@@ -12,4 +13,6 @@ public interface EmployeeService {
      */
     Employee login(EmployeeLoginDTO employeeLoginDTO);
 
+
+    boolean addEmployee(EmployeeDTO employeeDTO);
 }

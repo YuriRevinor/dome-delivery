@@ -1,7 +1,10 @@
 package com.yurirvs.dome.service.impl;
 
 import com.yurirvs.dome.constant.MessageConstant;
+import com.yurirvs.dome.constant.PasswordConstant;
 import com.yurirvs.dome.constant.StatusConstant;
+import com.yurirvs.dome.context.BaseContext;
+import com.yurirvs.dome.dto.EmployeeDTO;
 import com.yurirvs.dome.dto.EmployeeLoginDTO;
 import com.yurirvs.dome.entity.Employee;
 import com.yurirvs.dome.exception.AccountLockedException;
@@ -9,8 +12,12 @@ import com.yurirvs.dome.exception.AccountNotFoundException;
 import com.yurirvs.dome.exception.PasswordErrorException;
 import com.yurirvs.dome.mapper.EmployeeMapper;
 import com.yurirvs.dome.service.EmployeeService;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.DigestUtils;
+
+import java.time.LocalDateTime;
 
 @Service
 public class EmployeeServiceImpl implements EmployeeService {
@@ -38,7 +45,9 @@ public class EmployeeServiceImpl implements EmployeeService {
         }
 
         //密码比对
-        // TODO 后期需要进行md5加密，然后再进行比对
+        //MD5 encryption
+        password = DigestUtils.md5DigestAsHex(password.getBytes());
+
         if (!password.equals(employee.getPassword())) {
             //密码错误
             throw new PasswordErrorException(MessageConstant.PASSWORD_ERROR);
@@ -53,4 +62,32 @@ public class EmployeeServiceImpl implements EmployeeService {
         return employee;
     }
 
+    @Override
+    public boolean addEmployee(EmployeeDTO employeeDTO) {
+        Employee employee = new Employee();
+
+        //Copy properties
+        BeanUtils.copyProperties(employeeDTO, employee);
+
+        //Enable employee account
+        employee.setStatus(StatusConstant.ENABLE);
+
+        //Default password
+        employee.setPassword(DigestUtils.md5DigestAsHex(PasswordConstant.DEFAULT_PASSWORD.getBytes()));
+
+        //Set time
+        employee.setCreateTime(LocalDateTime.now());
+        employee.setUpdateTime(LocalDateTime.now());
+
+        //Set Creator ID
+        employee.setCreateUser(BaseContext.getCurrentId());
+        employee.setUpdateUser(BaseContext.getCurrentId());
+
+        if (employeeMapper.insert(employee) == 1) {
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
 }
