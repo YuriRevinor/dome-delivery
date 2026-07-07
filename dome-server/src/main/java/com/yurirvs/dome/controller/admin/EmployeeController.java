@@ -91,11 +91,21 @@ public class EmployeeController {
 
     @ApiOperation("分页查询员工")
     @GetMapping("/page")
-    public Result<PageResult> pageQuery(EmployeePageQueryDTO employeePageQueryDTO){
-        log.info("分页查询: {}",employeePageQueryDTO);
+    public Result<PageResult> pageQuery(EmployeePageQueryDTO employeePageQueryDTO) {
+        log.info("分页查询: {}", employeePageQueryDTO);
 
         PageResult pageResult = employeeService.pageQuery(employeePageQueryDTO);
 
         return Result.success(pageResult);
+    }
+
+    @ApiOperation("启用/禁用员工账号")
+    @PostMapping("/status/{status}")
+    public Result<String> toggleStatus(Long id, @PathVariable Integer status) {
+        log.info("启用/禁用员工账号: {},{}", id, status);
+
+        employeeService.toggleStatus(id, status);
+
+        return Result.success();
     }
 }
