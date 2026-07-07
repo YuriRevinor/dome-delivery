@@ -2,7 +2,9 @@ package com.yurirvs.dome.service;
 
 import com.yurirvs.dome.dto.EmployeeDTO;
 import com.yurirvs.dome.dto.EmployeeLoginDTO;
+import com.yurirvs.dome.dto.EmployeePageQueryDTO;
 import com.yurirvs.dome.entity.Employee;
+import com.yurirvs.dome.result.PageResult;
 
 public interface EmployeeService {
 
@@ -15,4 +17,6 @@ public interface EmployeeService {
 
 
     boolean addEmployee(EmployeeDTO employeeDTO);
+
+    PageResult pageQuery(EmployeePageQueryDTO employeePageQueryDTO);
 }

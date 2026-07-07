@@ -1,16 +1,20 @@
 package com.yurirvs.dome.service.impl;
 
+import com.github.pagehelper.Page;
+import com.github.pagehelper.PageHelper;
 import com.yurirvs.dome.constant.MessageConstant;
 import com.yurirvs.dome.constant.PasswordConstant;
 import com.yurirvs.dome.constant.StatusConstant;
 import com.yurirvs.dome.context.BaseContext;
 import com.yurirvs.dome.dto.EmployeeDTO;
 import com.yurirvs.dome.dto.EmployeeLoginDTO;
+import com.yurirvs.dome.dto.EmployeePageQueryDTO;
 import com.yurirvs.dome.entity.Employee;
 import com.yurirvs.dome.exception.AccountLockedException;
 import com.yurirvs.dome.exception.AccountNotFoundException;
 import com.yurirvs.dome.exception.PasswordErrorException;
 import com.yurirvs.dome.mapper.EmployeeMapper;
+import com.yurirvs.dome.result.PageResult;
 import com.yurirvs.dome.service.EmployeeService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -89,5 +93,15 @@ public class EmployeeServiceImpl implements EmployeeService {
         else {
             return false;
         }
+    }
+
+    @Override
+    public PageResult pageQuery(EmployeePageQueryDTO employeePageQueryDTO) {
+
+        PageHelper.startPage(employeePageQueryDTO.getPage(),employeePageQueryDTO.getPageSize());
+
+        Page<Employee> page = employeeMapper.pageQuery(employeePageQueryDTO);
+
+        return new PageResult(page.getTotal(),page.getResult());
     }
 }

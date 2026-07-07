@@ -1,5 +1,7 @@
 package com.yurirvs.dome.mapper;
 
+import com.github.pagehelper.Page;
+import com.yurirvs.dome.dto.EmployeePageQueryDTO;
 import com.yurirvs.dome.entity.Employee;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
@@ -20,4 +22,8 @@ public interface EmployeeMapper {
             "(null,#{name},#{username},#{password},#{phone},#{sex},#{idNumber},#{status}," +
             "#{createTime},#{updateTime},#{createUser},#{updateUser})")
     int insert(Employee employee);
+
+
+
+    Page<Employee> pageQuery(EmployeePageQueryDTO employeePageQueryDTO);
 }

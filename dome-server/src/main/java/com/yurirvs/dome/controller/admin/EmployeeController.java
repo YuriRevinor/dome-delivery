@@ -3,8 +3,10 @@ package com.yurirvs.dome.controller.admin;
 import com.yurirvs.dome.constant.JwtClaimsConstant;
 import com.yurirvs.dome.dto.EmployeeDTO;
 import com.yurirvs.dome.dto.EmployeeLoginDTO;
+import com.yurirvs.dome.dto.EmployeePageQueryDTO;
 import com.yurirvs.dome.entity.Employee;
 import com.yurirvs.dome.properties.JwtProperties;
+import com.yurirvs.dome.result.PageResult;
 import com.yurirvs.dome.result.Result;
 import com.yurirvs.dome.service.EmployeeService;
 import com.yurirvs.dome.utils.JwtUtil;
@@ -13,10 +15,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -88,5 +87,15 @@ public class EmployeeController {
         else {
             return Result.error("员工添加失败");
         }
+    }
+
+    @ApiOperation("分页查询员工")
+    @GetMapping("/page")
+    public Result<PageResult> pageQuery(EmployeePageQueryDTO employeePageQueryDTO){
+        log.info("分页查询: {}",employeePageQueryDTO);
+
+        PageResult pageResult = employeeService.pageQuery(employeePageQueryDTO);
+
+        return Result.success(pageResult);
     }
 }
