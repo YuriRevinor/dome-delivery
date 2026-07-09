@@ -1,8 +1,10 @@
 package com.yurirvs.dome.mapper;
 
 import com.github.pagehelper.Page;
+import com.yurirvs.dome.annotation.AutoFill;
 import com.yurirvs.dome.dto.EmployeePageQueryDTO;
 import com.yurirvs.dome.entity.Employee;
+import com.yurirvs.dome.enumeration.OperationType;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Select;
@@ -21,12 +23,13 @@ public interface EmployeeMapper {
     @Insert("INSERT INTO employee VALUES " +
             "(null,#{name},#{username},#{password},#{phone},#{sex},#{idNumber},#{status}," +
             "#{createTime},#{updateTime},#{createUser},#{updateUser})")
+    @AutoFill(OperationType.INSERT)
     int insert(Employee employee);
 
 
     Page<Employee> pageQuery(EmployeePageQueryDTO employeePageQueryDTO);
 
-
+    @AutoFill(OperationType.UPDATE)
     int update(Employee employee);
 
     @Select("SELECT * FROM  employee WHERE id=#{id}")
