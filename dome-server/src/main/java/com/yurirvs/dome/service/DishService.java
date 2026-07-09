@@ -18,4 +18,6 @@ public interface DishService {
     DishVO getByIdWithFlavor(Long id);
 
     void updateDishWithFlavor(DishDTO dishDTO);
+
+    void toggleDishStatus(Long id, Integer status);
 }

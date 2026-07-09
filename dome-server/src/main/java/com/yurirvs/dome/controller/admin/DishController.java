@@ -76,4 +76,14 @@ public class DishController {
 
         return Result.success();
     }
+
+    @ApiOperation("修改菜品状态")
+    @PostMapping("/status/{status}")
+    public Result<String> toggleStatus(Long id, @PathVariable Integer status) {
+        log.info("修改菜品起售/停售: {},{}", id, status);
+
+        dishService.toggleDishStatus(id,status);
+
+        return Result.success();
+    }
 }

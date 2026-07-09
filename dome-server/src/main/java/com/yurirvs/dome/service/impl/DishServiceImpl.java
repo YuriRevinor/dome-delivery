@@ -119,7 +119,7 @@ public class DishServiceImpl implements DishService {
     public void updateDishWithFlavor(DishDTO dishDTO) {
         //修改菜品表
         Dish dish = new Dish();
-        BeanUtils.copyProperties(dishDTO,dish);
+        BeanUtils.copyProperties(dishDTO, dish);
 
         dishMapper.updateById(dish);
 
@@ -134,5 +134,13 @@ public class DishServiceImpl implements DishService {
             }
             int addedFlavorBatch = dishFlavorMapper.addFlavorBatch(flavors);
         }
+    }
+
+    @Override
+    public void toggleDishStatus(Long id, Integer status) {
+        Dish dish = new Dish();
+        dish.setId(id);
+        dish.setStatus(status);
+        dishMapper.updateById(dish);
     }
 }
