@@ -16,6 +16,7 @@ import com.yurirvs.dome.mapper.SetmealDishMapper;
 import com.yurirvs.dome.mapper.SetmealMapper;
 import com.yurirvs.dome.result.PageResult;
 import com.yurirvs.dome.service.SetmealService;
+import com.yurirvs.dome.vo.DishItemVO;
 import com.yurirvs.dome.vo.SetmealVO;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -130,5 +131,24 @@ public class SetmealServiceImpl implements SetmealService {
         setmeal.setStatus(status);
 
         setmealMapper.updateSetmeal(setmeal);
+    }
+
+    /**
+     * 条件查询
+     * @param setmeal
+     * @return
+     */
+    public List<Setmeal> list(Setmeal setmeal) {
+        List<Setmeal> list = setmealMapper.list(setmeal);
+        return list;
+    }
+
+    /**
+     * 根据id查询菜品选项
+     * @param id
+     * @return
+     */
+    public List<DishItemVO> getDishItemById(Long id) {
+        return setmealMapper.getDishItemBySetmealId(id);
     }
 }

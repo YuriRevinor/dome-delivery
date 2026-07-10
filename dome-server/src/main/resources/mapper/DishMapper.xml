@@ -72,4 +72,42 @@
                  INNER JOIN setmeal_dish sd ON d.id = sd.dish_id
         WHERE sd.setmeal_id = #{SetmealId}
     </select>
+
+    <select id="list" resultType="com.yurirvs.dome.entity.Dish">
+        SELECT *
+        FROM dish
+        <where>
+            <if test="id != null">
+                AND id = #{id}
+            </if>
+
+            <if test="name != null and name != ''">
+                AND name LIKE CONCAT('%', #{name}, '%')
+            </if>
+
+            <if test="categoryId != null">
+                AND category_id = #{categoryId}
+            </if>
+
+            <if test="price != null">
+                AND price = #{price}
+            </if>
+
+            <if test="status != null">
+                AND status = #{status}
+            </if>
+
+            <if test="description != null and description != ''">
+                AND description LIKE CONCAT('%', #{description}, '%')
+            </if>
+
+            <if test="createUser != null">
+                AND create_user = #{createUser}
+            </if>
+
+            <if test="updateUser != null">
+                AND update_user = #{updateUser}
+            </if>
+        </where>
+    </select>
 </mapper>

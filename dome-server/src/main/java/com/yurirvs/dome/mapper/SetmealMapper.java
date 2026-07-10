@@ -4,6 +4,7 @@ import com.github.pagehelper.Page;
 import com.yurirvs.dome.annotation.AutoFill;
 import com.yurirvs.dome.entity.Setmeal;
 import com.yurirvs.dome.enumeration.OperationType;
+import com.yurirvs.dome.vo.DishItemVO;
 import com.yurirvs.dome.vo.SetmealVO;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
@@ -16,6 +17,7 @@ public interface SetmealMapper {
 
     /**
      * 根据分类id查询套餐的数量
+     *
      * @param id
      * @return
      */
@@ -36,4 +38,24 @@ public interface SetmealMapper {
     void updateSetmeal(Setmeal setmeal);
 
     List<Setmeal> getByIds(List<Long> ids);
+
+    /**
+     * 动态条件查询套餐
+     *
+     * @param setmeal
+     * @return
+     */
+    List<Setmeal> list(Setmeal setmeal);
+
+    /**
+     * 根据套餐id查询菜品选项
+     *
+     * @param setmealId
+     * @return
+     */
+    @Select("select sd.name, sd.copies, d.image, d.description " +
+            "from setmeal_dish sd left join dish d on sd.dish_id = d.id " +
+            "where sd.setmeal_id = #{setmealId}")
+    List<DishItemVO> getDishItemBySetmealId(Long setmealId);
+
 }
