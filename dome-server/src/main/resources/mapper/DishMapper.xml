@@ -65,4 +65,11 @@
         </set>
         WHERE id = #{id}
     </update>
+
+    <select id="getBySetmealId" resultType="com.yurirvs.dome.entity.Dish">
+        SELECT d.*
+        FROM dish d
+                 INNER JOIN setmeal_dish sd ON d.id = sd.dish_id
+        WHERE sd.setmeal_id = #{SetmealId}
+    </select>
 </mapper>

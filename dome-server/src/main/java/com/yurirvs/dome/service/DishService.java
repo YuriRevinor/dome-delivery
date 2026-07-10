@@ -2,6 +2,7 @@ package com.yurirvs.dome.service;
 
 import com.yurirvs.dome.dto.DishDTO;
 import com.yurirvs.dome.dto.DishPageQueryDTO;
+import com.yurirvs.dome.entity.Dish;
 import com.yurirvs.dome.result.PageResult;
 import com.yurirvs.dome.vo.DishVO;
 
@@ -20,4 +21,6 @@ public interface DishService {
     void updateDishWithFlavor(DishDTO dishDTO);
 
     void toggleDishStatus(Long id, Integer status);
+
+    List<Dish> getByCategoryId(Long categoryId);
 }

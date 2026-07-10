@@ -1,7 +1,15 @@
 package com.yurirvs.dome.mapper;
 
+import com.github.pagehelper.Page;
+import com.yurirvs.dome.annotation.AutoFill;
+import com.yurirvs.dome.entity.Setmeal;
+import com.yurirvs.dome.enumeration.OperationType;
+import com.yurirvs.dome.vo.SetmealVO;
+import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Select;
+
+import java.util.List;
 
 @Mapper
 public interface SetmealMapper {
@@ -14,4 +22,18 @@ public interface SetmealMapper {
     @Select("select count(id) from setmeal where category_id = #{categoryId}")
     Integer countByCategoryId(Long id);
 
+    @AutoFill(OperationType.INSERT)
+    void addSetmeal(Setmeal setmeal);
+
+    Page<SetmealVO> pageQueryWithCategoryName(Setmeal setmeal);
+
+    void deleteByIds(List<Long> ids);
+
+    @Select("SELECT * FROM setmeal WHERE id= #{id}")
+    Setmeal getById(Long id);
+
+    @AutoFill(OperationType.UPDATE)
+    void updateSetmeal(Setmeal setmeal);
+
+    List<Setmeal> getByIds(List<Long> ids);
 }

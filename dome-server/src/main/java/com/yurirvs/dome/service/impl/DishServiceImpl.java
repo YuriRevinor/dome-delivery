@@ -20,6 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -142,5 +143,11 @@ public class DishServiceImpl implements DishService {
         dish.setId(id);
         dish.setStatus(status);
         dishMapper.updateById(dish);
+    }
+
+    @Override
+    public List<Dish> getByCategoryId(Long categoryId) {
+
+        return dishMapper.getByCategoryId(categoryId);
     }
 }

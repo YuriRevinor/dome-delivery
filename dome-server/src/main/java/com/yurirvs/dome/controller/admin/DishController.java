@@ -3,6 +3,7 @@ package com.yurirvs.dome.controller.admin;
 
 import com.yurirvs.dome.dto.DishDTO;
 import com.yurirvs.dome.dto.DishPageQueryDTO;
+import com.yurirvs.dome.entity.Dish;
 import com.yurirvs.dome.result.PageResult;
 import com.yurirvs.dome.result.Result;
 import com.yurirvs.dome.service.DishService;
@@ -82,8 +83,18 @@ public class DishController {
     public Result<String> toggleStatus(Long id, @PathVariable Integer status) {
         log.info("修改菜品起售/停售: {},{}", id, status);
 
-        dishService.toggleDishStatus(id,status);
+        dishService.toggleDishStatus(id, status);
 
         return Result.success();
+    }
+
+    @ApiOperation("根据分类查询菜品")
+    @GetMapping("/list")
+    public Result<List<Dish>> getByCategoryId(Long categoryId) {
+        log.info("根据分类查询菜品: {}", categoryId);
+
+        List<Dish> dishes = dishService.getByCategoryId(categoryId);
+
+        return Result.success(dishes);
     }
 }
