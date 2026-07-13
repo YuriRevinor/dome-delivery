@@ -90,4 +90,79 @@
         </set>
         where id = #{id}
     </update>
+
+
+    <resultMap id="getByUserIdWithDetailsResultMap"
+               type="com.yurirvs.dome.vo.OrderVO">
+
+        <id property="id" column="id"/>
+
+        <result property="number" column="number"/>
+        <result property="status" column="status"/>
+        <result property="userId" column="user_id"/>
+        <result property="addressBookId" column="address_book_id"/>
+        <result property="orderTime" column="order_time"/>
+        <result property="checkoutTime" column="checkout_time"/>
+        <result property="payMethod" column="pay_method"/>
+        <result property="payStatus" column="pay_status"/>
+        <result property="amount" column="amount"/>
+        <result property="remark" column="remark"/>
+        <result property="userName" column="user_name"/>
+        <result property="phone" column="phone"/>
+        <result property="address" column="address"/>
+        <result property="consignee" column="consignee"/>
+        <result property="cancelReason" column="cancel_reason"/>
+        <result property="rejectionReason" column="rejection_reason"/>
+        <result property="cancelTime" column="cancel_time"/>
+        <result property="estimatedDeliveryTime"
+                column="estimated_delivery_time"/>
+        <result property="deliveryStatus" column="delivery_status"/>
+        <result property="deliveryTime" column="delivery_time"/>
+        <result property="packAmount" column="pack_amount"/>
+        <result property="tablewareNumber" column="tableware_number"/>
+        <result property="tablewareStatus" column="tableware_status"/>
+
+        <collection property="orderDetailList"
+                    column="id"
+                    select="com.yurirvs.dome.mapper.OrderDetailMapper.getByOrderId"
+                    fetchType="eager"/>
+    </resultMap>
+
+    <select id="getByUserIdWithDetails" resultMap="getByUserIdWithDetailsResultMap">
+        SELECT *
+        FROM orders
+        WHERE user_id=#{userId}
+    </select>
+
+    <select id="getByIdWithDetails" resultMap="getByUserIdWithDetailsResultMap">
+        SELECT *
+        FROM orders
+        WHERE id = #{id}
+    </select>
+
+    <select id="conditionSearch" resultMap="getByUserIdWithDetailsResultMap">
+        SELECT *
+        FROM orders
+        <where>
+            <if test="phone != null">
+                phone = #{phone}
+            </if>
+
+            <if test="status != null">
+                AND status = #{status}
+            </if>
+
+            <if test="number != null and number != ''">
+                AND number LIKE CONCAT('%', #{number}, '%')
+            </if>
+
+            <if test="beginTime != null">
+                AND order_time <![CDATA[>=]]> #{beginTime}
+            </if>
+
+            <if test="endTime != null">
+                AND order_time <![CDATA[<=]]> #{endTime}
+            </if>
+        </where>
+    </select>
 </mapper>

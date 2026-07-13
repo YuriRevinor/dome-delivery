@@ -1,19 +1,24 @@
 package com.yurirvs.dome.service.impl;
 
 import com.alibaba.fastjson.JSONObject;
+import com.github.pagehelper.Page;
+import com.github.pagehelper.PageHelper;
 import com.yurirvs.dome.constant.MessageConstant;
+import com.yurirvs.dome.constant.StatusConstant;
 import com.yurirvs.dome.context.BaseContext;
-import com.yurirvs.dome.dto.OrdersPaymentDTO;
-import com.yurirvs.dome.dto.OrdersSubmitDTO;
+import com.yurirvs.dome.dto.*;
 import com.yurirvs.dome.entity.*;
 import com.yurirvs.dome.exception.AddressBookBusinessException;
 import com.yurirvs.dome.exception.OrderBusinessException;
 import com.yurirvs.dome.exception.ShoppingCartBusinessException;
 import com.yurirvs.dome.mapper.*;
+import com.yurirvs.dome.result.PageResult;
 import com.yurirvs.dome.service.OrderService;
 import com.yurirvs.dome.utils.WeChatPayUtil;
 import com.yurirvs.dome.vo.OrderPaymentVO;
+import com.yurirvs.dome.vo.OrderStatisticsVO;
 import com.yurirvs.dome.vo.OrderSubmitVO;
+import com.yurirvs.dome.vo.OrderVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +29,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -69,6 +75,11 @@ public class OrderServiceImpl implements OrderService {
         order.setConsignee(addressBook.getConsignee());
         order.setPhone(addressBook.getPhone());
         order.setNumber(String.valueOf(System.currentTimeMillis()));
+
+        StringBuilder sb = new StringBuilder();
+        sb.append(addressBook.getProvinceName()).append(" ").append(addressBook.getCityName()).append(" ")
+                .append(addressBook.getDistrictName()).append(" ").append(addressBook.getDetail());
+        order.setAddress(sb.toString());
 
         orderMapper.insert(order);
         //订单明细表处理
@@ -158,4 +169,186 @@ public class OrderServiceImpl implements OrderService {
 
         orderMapper.update(orders);
     }
+
+    @Override
+    public PageResult pageQuery(OrdersPageQueryDTO ordersPageQueryDTO) {
+        PageHelper.startPage(ordersPageQueryDTO.getPage(), ordersPageQueryDTO.getPageSize());
+
+        Page page = orderMapper.getByUserIdWithDetails(BaseContext.getCurrentId());
+
+        return new PageResult(page.getTotal(), page.getResult());
+    }
+
+    @Override
+    public OrderVO getByIdWithDetails(Long id) {
+        return orderMapper.getByIdWithDetails(id);
+    }
+
+    @Override
+    public void cancelOrder(Long id) {
+        Orders order = orderMapper.getById(id);
+
+        // 校验订单是否存在
+        if (order == null) {
+            throw new OrderBusinessException(MessageConstant.ORDER_NOT_FOUND);
+        }
+
+        //订单状态 1待付款 2待接单 3已接单 4派送中 5已完成 6已取消
+        if (order.getStatus() > 2) {
+            throw new OrderBusinessException(MessageConstant.ORDER_STATUS_ERROR);
+        }
+
+        // 订单处于待接单状态下取消，需要进行退款
+        if (order.getStatus().equals(Orders.TO_BE_CONFIRMED)) {
+
+            //支付状态修改为 退款
+            order.setPayStatus(Orders.REFUND);
+        }
+
+        order.setStatus(Orders.CANCELLED);
+        order.setCancelReason("用户取消");
+        order.setCancelTime(LocalDateTime.now());
+        orderMapper.update(order);
+
+    }
+
+    @Override
+    public void repeatOrder(Long id) {
+        Long userId = BaseContext.getCurrentId();
+
+        Orders order = orderMapper.getById(id);
+
+        List<OrderDetail> orderDetails = orderDetailMapper.getByOrderId(order.getId());
+
+        List<ShoppingCart> shoppingCarts = orderDetails.stream().map(orderDetail -> {
+            ShoppingCart shoppingCart = new ShoppingCart();
+            BeanUtils.copyProperties(orderDetail, shoppingCart);
+            shoppingCart.setUserId(userId);
+            shoppingCart.setCreateTime(LocalDateTime.now());
+            return shoppingCart;
+        }).collect(Collectors.toList());
+
+        shoppingCartMapper.insertBatch(shoppingCarts);
+    }
+
+    @Override
+    public PageResult conditionSearch(OrdersPageQueryDTO ordersPageQueryDTO) {
+        PageHelper.startPage(ordersPageQueryDTO.getPage(), ordersPageQueryDTO.getPageSize());
+
+        Orders order = new Orders();
+        BeanUtils.copyProperties(ordersPageQueryDTO, order);
+
+        Page page = orderMapper.conditionSearch(ordersPageQueryDTO);
+
+        List<OrderVO> result = (List<OrderVO>) page.getResult();
+
+        for (OrderVO orderVO : result) {
+            StringBuilder sb = new StringBuilder();
+            for (OrderDetail orderDetail : orderVO.getOrderDetailList()) {
+                sb.append(orderDetail.getName())
+                        .append(" *").append(orderDetail.getNumber()).append(", ");
+            }
+            sb.delete(sb.length() - 2, sb.length());
+            orderVO.setOrderDishes(sb.toString());
+        }
+
+
+        return new PageResult(page.getTotal(), page.getResult());
+    }
+
+    @Override
+    public OrderStatisticsVO getStatistics() {
+        OrderStatisticsVO orderStatisticsVO = new OrderStatisticsVO();
+
+        orderStatisticsVO.setConfirmed(orderMapper.countByStatus(OrderVO.CONFIRMED));
+        orderStatisticsVO.setToBeConfirmed(orderMapper.countByStatus(OrderVO.TO_BE_CONFIRMED));
+        orderStatisticsVO.setDeliveryInProgress(orderMapper.countByStatus(OrderVO.DELIVERY_IN_PROGRESS));
+
+        return orderStatisticsVO;
+    }
+
+    @Override
+    public void acceptOrder(Long id) {
+
+        Orders order = Orders.builder()
+                .id(id)
+                .status(Orders.CONFIRMED)
+                .build();
+
+        orderMapper.update(order);
+    }
+
+    @Override
+    public void rejectOrder(OrdersRejectionDTO ordersRejectionDTO) {
+        Orders order = orderMapper.getById(ordersRejectionDTO.getId());
+
+        if (!order.getStatus().equals(Orders.TO_BE_CONFIRMED)) {
+            throw new OrderBusinessException(MessageConstant.ORDER_STATUS_ERROR);
+        }
+        else {
+            System.out.println(ordersRejectionDTO.getRejectionReason());
+            Orders newOrder = Orders.builder()
+                    .id(ordersRejectionDTO.getId())
+                    .status(Orders.CANCELLED)
+                    .payStatus(Orders.REFUND)
+                    .rejectionReason(ordersRejectionDTO.getRejectionReason())
+                    .cancelTime(LocalDateTime.now())
+                    .build();
+            orderMapper.update(newOrder);
+        }
+    }
+
+    @Override
+    public void adminCancelOrder(OrdersCancelDTO ordersCancelDTO) {
+        Orders order = orderMapper.getById(ordersCancelDTO.getId());
+
+        if (order.getStatus() <= 2) {
+            throw new OrderBusinessException(MessageConstant.ORDER_STATUS_ERROR);
+        }
+        else {
+            Orders newOrder = Orders.builder()
+                    .id(ordersCancelDTO.getId())
+                    .status(Orders.CANCELLED)
+                    .payStatus(Orders.REFUND)
+                    .cancelReason(ordersCancelDTO.getCancelReason())
+                    .cancelTime(LocalDateTime.now())
+                    .build();
+            orderMapper.update(newOrder);
+        }
+    }
+
+    @Override
+    public void deliverOrder(Long id) {
+        Orders order = orderMapper.getById(id);
+
+        if (!order.getStatus().equals(Orders.CONFIRMED)) {
+            throw new OrderBusinessException(MessageConstant.ORDER_STATUS_ERROR);
+        }
+        else {
+            Orders newOrder = Orders.builder()
+                    .id(id)
+                    .status(Orders.DELIVERY_IN_PROGRESS)
+                    .build();
+            orderMapper.update(newOrder);
+        }
+    }
+
+    @Override
+    public void completeOrder(Long id) {
+        Orders order = orderMapper.getById(id);
+
+        if (!order.getStatus().equals(Orders.DELIVERY_IN_PROGRESS)) {
+            throw new OrderBusinessException(MessageConstant.ORDER_STATUS_ERROR);
+        }
+        else {
+            Orders newOrder = Orders.builder()
+                    .id(id)
+                    .status(Orders.COMPLETED)
+                    .deliveryTime(LocalDateTime.now())
+                    .build();
+            orderMapper.update(newOrder);
+        }
+    }
+
+
 }

@@ -1,10 +1,14 @@
 package com.yurirvs.dome.mapper;
 
+import com.github.pagehelper.Page;
+import com.yurirvs.dome.dto.OrdersPageQueryDTO;
 import com.yurirvs.dome.entity.Orders;
+import com.yurirvs.dome.vo.OrderVO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.Update;
+import org.aspectj.weaver.ast.Or;
 
 import java.time.LocalDateTime;
 
@@ -36,4 +40,17 @@ public interface OrderMapper {
                       @Param("orderPaidStatus") Integer orderPaidStatus,
                       @Param("checkOutTime") LocalDateTime checkOutTime,
                       @Param("orderNumber") String orderNumber);
+
+
+    Page getByUserIdWithDetails(Long UserId);
+
+    OrderVO getByIdWithDetails(Long id);
+
+    @Select("SELECT * FROM orders WHERE id=#{id}")
+    Orders getById(Long id);
+
+    Page conditionSearch(OrdersPageQueryDTO ordersPageQueryDTO);
+
+    @Select("SELECT COUNT(*) FROM orders WHERE status=#{status}")
+    Integer countByStatus(Integer status);
 }
