@@ -151,9 +151,9 @@ public class OrderServiceImpl implements OrderService {
         Orders order = orderMapper.getByNumber(orderNumber);
 
         Map map = new HashMap();
-        map.put("type",1);
-        map.put("orderId",order.getId());
-        map.put("content","订单号: "+order.getNumber());
+        map.put("type", 1);
+        map.put("orderId", order.getId());
+        map.put("content", "订单号: " + order.getNumber());
 
         String json = JSON.toJSONString(map);
         webSocketServer.sendToAllClient(json);
@@ -360,6 +360,28 @@ public class OrderServiceImpl implements OrderService {
                     .build();
             orderMapper.update(newOrder);
         }
+    }
+
+    @Override
+    public void remindOrder(Long id) {
+        Orders order = orderMapper.getById(id);
+
+        if (!order.getStatus().equals(Orders.TO_BE_CONFIRMED)) {
+            throw new OrderBusinessException(MessageConstant.ORDER_STATUS_ERROR);
+        }
+        else {
+
+            Map map = new HashMap();
+            map.put("type", 2);
+            map.put("orderId", order.getId());
+            map.put("content", "订单号: " + order.getNumber());
+
+            String json = JSON.toJSONString(map);
+            webSocketServer.sendToAllClient(json);
+
+        }
+
+
     }
 
 
