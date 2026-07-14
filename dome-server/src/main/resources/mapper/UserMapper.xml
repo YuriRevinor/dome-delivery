@@ -5,7 +5,19 @@
 
     <insert id="addUser" useGeneratedKeys="true" keyProperty="id">
         INSERT INTO user(openid, name, phone, sex, id_number, avatar, create_time)
-        VALUES (#{openid},#{name},#{phone},#{sex},#{idNumber},#{avatar},#{createTime})
+        VALUES (#{openid}, #{name}, #{phone}, #{sex}, #{idNumber}, #{avatar}, #{createTime})
     </insert>
 
+    <select id="getByCreateTime" resultType="java.lang.Integer">
+        SELECT count(*)
+        FROM user
+        <where>
+            <if test="beginTime!=null">
+                create_time &gt; #{beginTime}
+            </if>
+            <if test="beginTime!=null">
+                AND create_time &lt; #{endTime}
+            </if>
+        </where>
+    </select>
 </mapper>

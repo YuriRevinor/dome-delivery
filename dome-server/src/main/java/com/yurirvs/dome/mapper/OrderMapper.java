@@ -1,6 +1,7 @@
 package com.yurirvs.dome.mapper;
 
 import com.github.pagehelper.Page;
+import com.yurirvs.dome.dto.GoodsSalesDTO;
 import com.yurirvs.dome.dto.OrdersPageQueryDTO;
 import com.yurirvs.dome.entity.Orders;
 import com.yurirvs.dome.vo.OrderVO;
@@ -10,7 +11,9 @@ import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.Update;
 import org.aspectj.weaver.ast.Or;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
 
 @Mapper
@@ -21,6 +24,7 @@ public interface OrderMapper {
 
     /**
      * 根据订单号查询订单
+     *
      * @param orderNumber
      */
     @Select("select * from orders where number = #{orderNumber}")
@@ -28,6 +32,7 @@ public interface OrderMapper {
 
     /**
      * 修改订单信息
+     *
      * @param orders
      */
     void update(Orders orders);
@@ -56,5 +61,15 @@ public interface OrderMapper {
     Integer countByStatus(Integer status);
 
     @Select("SELECT * FROM orders WHERE status=#{status} AND order_time < #{orderTime}")
-    List<Orders> getByStatusAndOrderTimeLT (Integer status, LocalDateTime orderTime);
+    List<Orders> getByStatusAndOrderTimeLT(Integer status, LocalDateTime orderTime);
+
+    @Select("SELECT sum(orders.amount) FROM orders WHERE order_time>#{beginTime} AND order_time<#{endTime} AND status=#{status}")
+    BigDecimal getAmountByDateAndStatus(HashMap<String, Object> map);
+
+    Integer getCountByOrderTimeAndStatus(@Param("beginTime") LocalDateTime beginTime,
+                                         @Param("endTime") LocalDateTime endTime,
+                                         @Param("status") Integer status);
+
+    List<GoodsSalesDTO> getSalesTop10(@Param("beginTime") LocalDateTime beginTime,
+                                      @Param("endTime") LocalDateTime endTime);
 }

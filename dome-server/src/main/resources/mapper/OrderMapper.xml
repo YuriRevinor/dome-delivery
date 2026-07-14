@@ -165,4 +165,32 @@
             </if>
         </where>
     </select>
+
+    <select id="getCountByOrderTimeAndStatus" resultType="java.lang.Integer">
+        SELECT count(*)
+        FROM orders
+        <where>
+            <if test="beginTime != null">
+                order_time &gt; #{beginTime}
+            </if>
+            <if test="beginTime != null">
+                AND order_time &lt; #{endTime}
+            </if>
+            <if test="status != null">
+                AND status = #{status}
+            </if>
+
+        </where>
+    </select>
+
+    <select id="getSalesTop10" resultType="com.yurirvs.dome.dto.GoodsSalesDTO">
+        SELECT od.`name`, count(*) AS `number`
+        FROM order_detail AS od
+        LEFT JOIN orders AS o
+        ON od.order_id = o.id
+        WHERE `status` = 5 AND order_time &gt; #{beginTime} AND order_time &lt; #{endTime}
+        GROUP BY od.`name`
+        ORDER BY `number` desc
+        LIMIT 10
+    </select>
 </mapper>
